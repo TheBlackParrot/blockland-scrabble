@@ -16,3 +16,75 @@ function GameConnection::exbp(%this) {
 
 	%this.bottomPrint(%str, 9, 1);
 }
+
+function GameConnection::doBottomPrint(%this) {
+	cancel(%this.bpsched);
+	%this.bpsched = %this.schedule(1000, doBottomPrint);
+
+	%str = "";
+
+	for(%i=0;%i<getWordCount(%this.pieces);%i++) {
+		%piece = getWord(%this.pieces, %i);
+
+		if(%i == %this.activePiece) {
+			%str = trim(%str SPC "\c0[" @ %piece @ "]");
+		} else {
+			%str = trim(%str SPC "\c6[" @ %piece @ "]");
+		}
+	}
+
+	%this.bottomPrint(%str, 3, 1);
+}
+
+function GameConnection::switchActivePiece(%this, %dir) {
+	%active = %this.activePiece ? %this.activePiece : 0;
+
+	switch$(%dir) {
+		case "left": %active--;
+		case "right": %active++;
+	}
+
+	if(%active < 0) {
+		%active = getWordCount(%this.pieces)-1;
+	}
+	if(%active >= getWordCount(%this.pieces)) {
+		%active = 0;
+	}
+
+	%this.activePiece = %active;
+
+	%this.play2D(brickRotateSound);
+	%this.doBottomPrint();
+}
+
+package ScrabbleInteractionPackage {
+	function serverCmdSuperShiftBrick(%client, %t1, %t2, %t3) {
+		return serverCmdShiftBrick(%client, %t1, %t2, %t3);
+	}
+
+	function serverCmdShiftBrick(%client, %t1, %t2, %t3) {
+		%vec = %t1 SPC %t2 SPC %t3;
+
+		switch$(%vec) {
+			case "0 1 0": %client.switchActivePiece("left");
+			case "0 -1 0": %client.switchActivePiece("right");
+		}
+	}
+
+	function serverCmdUndoBrick(%client) {
+		if(%client.selectionSet.getCount() > 0) {
+			%row = %client.selectionSet.getObject(%client.selectionSet.getCount()-1);
+			%client.selectionSet.removeBrick(%row.brick);
+		}
+	}
+
+	function serverCmdCancelBrick(%client) {
+		if(%client.selectionSet.getCount() > 0) {
+			while(%client.selectionSet.getCount() > 0) {
+				%row = %client.selectionSet.getObject(0);
+				%client.selectionSet.removeBrick(%row.brick);
+			}
+		}
+	}
+};
+activatePackage(ScrabbleInteractionPackage);

@@ -26,12 +26,12 @@ if($Scrabble::Order[0] $= "") {
 
 function getScrabbleTile(%id) {
 	switch$(%id) {
-		case "3W": return 17;
-		case "2W": return 21;
-		case "3L": return 18;
-		case "2L": return 22;
-		case "ST": return 20;
-		case "NN": return 19;
+		case "3W": return 41;
+		case "2W": return 45;
+		case "3L": return 42;
+		case "2L": return 46;
+		case "ST": return 44;
+		case "NN": return 43;
 	}
 }
 
@@ -66,6 +66,7 @@ function createBoard() {
 				tile = getWord($Scrabble::Order[%x], %y);
 				letterPiece = 0;
 				boardPiece = 1;
+				ghostTile = -1;
 			};
 			%brick.setName(%name);
 
@@ -76,5 +77,56 @@ function createBoard() {
 		}
 	}
 
-	$Scrabble::Offset = vectorAdd($Scrabble::Offset, "100 0 0");
+	$Scrabble::Offset = vectorAdd($Scrabble::Offset, "70 0 0");
 }
+
+package ScrabbleBoardPackage {
+	function fxDTSBrick::onActivate(%this, %player, %client, %pos, %vec) {
+		talk(%this);
+
+		if(%client.scrabbleGame.gameNum != %this.game) {
+			return parent::onActivate(%this, %player, %client, %pos, %vec);
+		}
+
+		if(%this.boardPiece) {
+			if(!isObject(%this.ghostTile)) {
+				// avoiding giving ownership to the player, hence "owner" being here
+				%brick = new fxDTSBrick() {
+					angleID = 0;
+					client = -1;
+					colorFxID = 3;
+					colorID = 6;
+					dataBlock = %this.getDatablock();
+					isBasePlate = 0;
+					isPlanted = 0;
+					position = vectorAdd(%this.getPosition(), "0 0 0.2");
+					printID = getScrabblePrint(getWord(%client.pieces, %client.activePiece));
+					scale = "1 1 1";
+					shapeFxID = 0;
+					stackBL_ID = 888888;
+					game = %this.boardNum;
+					x = %this.x;
+					y = %this.y;
+					tile = %this.tile;
+					letter = getWord(%client.pieces, %client.activePiece);
+					letterPiece = 1;
+					boardPiece = 0;
+					owner = %client;
+				};
+
+				%brick.setTrusted(1);
+				BrickGroup_888888.add(%brick);
+
+				%client.selectionSet.addBrick(%brick);
+				%this.ghostTile = %brick;
+			} else {
+				%client.selectionSet.removeBrick(%this.ghostTile);
+			}
+		}
+
+		if(%this.letterPiece) {
+			%client.selectionSet.removeBrick(%brick);
+		}
+	}
+};
+activatePackage(ScrabbleBoardPackage);

@@ -64,6 +64,37 @@ if($Scrabble::Pieces $= "") {
 	initScrabblePoints();
 }
 
+function getScrabblePrint(%char) {
+	switch$(%char) {
+		case "A": return 48;
+		case "B": return 47;
+		case "C": return 40;
+		case "D": return 39;
+		case "E": return 38;
+		case "F": return 37;
+		case "G": return 36;
+		case "H": return 35;
+		case "I": return 34;
+		case "J": return 33;
+		case "K": return 32;
+		case "L": return 31;
+		case "M": return 30;
+		case "N": return 29;
+		case "O": return 28;
+		case "P": return 27;
+		case "Q": return 26;
+		case "R": return 25;
+		case "S": return 24;
+		case "T": return 23;
+		case "U": return 22;
+		case "V": return 21;
+		case "W": return 20;
+		case "X": return 19;
+		case "Y": return 18;
+		case "Z": return 17;
+	}
+}
+
 function ScrabbleGame::drawPiece(%this) {
 	if(getWordCount(%this.pieces) < 1) {
 		return -1;
