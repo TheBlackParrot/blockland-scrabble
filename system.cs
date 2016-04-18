@@ -152,6 +152,7 @@ function SelectionSet::isWord(%this) {
 				%brick = %row.brick;
 
 				%str = %str @ %brick.letter;
+				%tiles = trim(%tiles TAB %brick.tile);
 			}
 
 		case "down":
@@ -160,15 +161,21 @@ function SelectionSet::isWord(%this) {
 				%brick = %row.brick;
 
 				%str = %str @ %brick.letter;
+				%tiles = trim(%tiles TAB %brick.tile);
 			}
 	}
 
 	talk(%str);
-	return isScrabbleWord(%str);
+	return isScrabbleWord(%str) TAB %str TAB %tiles;
 }
 
 function SelectionSet::plant(%this) {
-	if(!%this.isWord()) {
+	%word_data = %this.isWord();
+	%isWord = getField(%word_data, 0);
+	%word = getField(%word_data, 1);
+	%tiles = getFields(%word_data, 2, getFieldCount(%word_data));
+
+	if(!%isWord) {
 		return;
 	}
 
@@ -206,6 +213,11 @@ function SelectionSet::plant(%this) {
 	while(%this.getCount() > 0) {
 		%this.getObject(0).delete();
 	}
+
+	%score = getScrabbleWordScore(%word, %tiles);
+	talk(%score SPC "POINTS, " SPC %word SPC "::" SPC %tiles);
+
+	%this.client.score += %score;
 }
 
 function ScrabbleGame::init(%this, %players) {
