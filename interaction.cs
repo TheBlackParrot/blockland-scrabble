@@ -86,5 +86,11 @@ package ScrabbleInteractionPackage {
 			}
 		}
 	}
+
+	function serverCmdPlantBrick(%client) {
+		if(%client.selectionSet.getCount() > 0) {
+			%client.selectionSet.plant();
+		}
+	}
 };
 activatePackage(ScrabbleInteractionPackage);

@@ -153,6 +153,7 @@ function SelectionSet::isWord(%this) {
 
 				%str = %str @ %brick.letter;
 				%tiles = trim(%tiles TAB %brick.tile);
+				%rows = trim(%rows TAB %row);
 			}
 
 		case "down":
@@ -162,18 +163,79 @@ function SelectionSet::isWord(%this) {
 
 				%str = %str @ %brick.letter;
 				%tiles = trim(%tiles TAB %brick.tile);
+				%rows = trim(%rows TAB %row);
 			}
 	}
 
-	talk(%str);
-	return isScrabbleWord(%str) TAB %str TAB %tiles;
+	return isScrabbleWord(%str) NL %str NL %tiles NL %rows NL (%lowest[pos] TAB %ordered[%lowest[pos]]) NL (%highest[pos] TAB %ordered[%highest[pos]]);
+}
+
+function SelectionSet::setEntireChain(%this) {
+	%dir = %this.determineDirection();
+	
+	%word_data = %this.isWord();
+	%rows = getRecord(%word_data, 3);
+
+	talk(%word_data);
+	talk(%rows);
+
+	for(%i=0;%i<getFieldCount(%rows);%i++) {
+		%row = getField(%rows, %i);
+		%brick = %row.brick;
+
+		talk("CHECKING CHAIN:" SPC %row SPC %row.brick);
+
+		%surrounds = %brick.getSurroundingPieces();
+		talk(%surrounds);
+
+		switch$(%dir) {
+			case "right":
+				talk("CHECKING HORIZONTALLY");
+				%left_s = getField(%surrounds, 0);
+				%right_s = getField(%surrounds, 1);
+
+				while(isObject(%left_s)) {
+					%this.addBrick(%left_s);
+
+					%left_s = getField(%left_s.getSurroundingPieces(), 0);
+				}
+
+				while(isObject(%right_s)) {
+					%this.addBrick(%right_s);
+
+					%right_s = getField(%right_s.getSurroundingPieces(), 1);
+				}
+
+			case "down":
+				talk("CHECKING VERTICALLY");
+				%up_s = getField(%surrounds, 2);
+				%down_s = getField(%surrounds, 3);
+
+				while(isObject(%up_s)) {
+					%this.addBrick(%up_s);
+
+					%up_s = getField(%up_s.getSurroundingPieces(), 2);
+				}
+
+				while(isObject(%down_s)) {
+					%this.addBrick(%down_s);
+
+					%down_s = getField(%down_s.getSurroundingPieces(), 3);
+				}
+		}
+	}
 }
 
 function SelectionSet::plant(%this) {
+	%this.setEntireChain();
+
 	%word_data = %this.isWord();
-	%isWord = getField(%word_data, 0);
-	%word = getField(%word_data, 1);
-	%tiles = getFields(%word_data, 2, getFieldCount(%word_data));
+	%isWord = getRecord(%word_data, 0);
+	%word = getRecord(%word_data, 1);
+	%tiles = getRecord(%word_data, 2);
+	%rows = getRecord(%word_data, 3);
+
+	talk(%word);
 
 	if(!%isWord) {
 		return;

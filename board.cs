@@ -35,6 +35,22 @@ function getScrabbleTile(%id) {
 	}
 }
 
+function fxDTSBrick::getSurroundingPieces(%this) {
+	%left_b = ("ScrabbleBoard_G" @ %this.game @ "_X" @ %this.x-1 @ "_Y" @ %this.y);
+	%left = isObject(%left_b.ghostTile) ? %left_b.ghostTile : "";
+
+	%right_b = ("ScrabbleBoard_G" @ %this.game @ "_X" @ %this.x+1 @ "_Y" @ %this.y);
+	%right = isObject(%right_b.ghostTile) ? %right_b.ghostTile : "";
+
+	%up_b = ("ScrabbleBoard_G" @ %this.game @ "_X" @ %this.x @ "_Y" @ %this.y-1);
+	%up = isObject(%up_b.ghostTile) ? %up_b.ghostTile : "";
+
+	%down_b = ("ScrabbleBoard_G" @ %this.game @ "_X" @ %this.x @ "_Y" @ %this.y+1);
+	%down = isObject(%down_b.ghostTile) ? %down_b.ghostTile : "";
+
+	return %left TAB %right TAB %up TAB %down;
+}
+
 function createBoard() {
 	%dataBlock = "brick3x3FPrintPlateData";
 	%boardNum = $Scrabble::Games;
@@ -115,6 +131,7 @@ package ScrabbleBoardPackage {
 					letterPiece = 1;
 					boardPiece = 0;
 					owner = %client;
+					parentTile = %this;
 				};
 
 				%brick.setTrusted(1);
