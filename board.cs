@@ -85,11 +85,14 @@ package ScrabbleBoardPackage {
 		talk(%this);
 
 		if(%client.scrabbleGame.gameNum != %this.game) {
+			talk("NOT THE SAME GAME");
 			return parent::onActivate(%this, %player, %client, %pos, %vec);
 		}
 
 		if(%this.boardPiece) {
+			talk("BOARD PIECE");
 			if(!isObject(%this.ghostTile)) {
+				talk("NEW GHOST");
 				// avoiding giving ownership to the player, hence "owner" being here
 				%brick = new fxDTSBrick() {
 					angleID = 0;
@@ -104,7 +107,7 @@ package ScrabbleBoardPackage {
 					scale = "1 1 1";
 					shapeFxID = 0;
 					stackBL_ID = 888888;
-					game = %this.boardNum;
+					game = %this.game;
 					x = %this.x;
 					y = %this.y;
 					tile = %this.tile;
@@ -120,12 +123,23 @@ package ScrabbleBoardPackage {
 				%client.selectionSet.addBrick(%brick);
 				%this.ghostTile = %brick;
 			} else {
+				talk("OLD GHOST");
 				%client.selectionSet.removeBrick(%this.ghostTile);
 			}
 		}
 
 		if(%this.letterPiece) {
-			%client.selectionSet.removeBrick(%brick);
+			talk("LETTER PIECE");
+			if(%this.isPlanted) {
+				talk("PLANTED");
+				if(%client.selectionSet.contains(%this)) {
+					talk("SELECTED");
+					%client.selectionSet.removeBrick(%this);
+				} else {
+					talk("NOT SELECTED");
+					%client.selectionSet.addBrick(%this);
+				}
+			}
 		}
 	}
 };

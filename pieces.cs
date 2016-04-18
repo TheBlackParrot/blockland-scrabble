@@ -113,3 +113,49 @@ function ScrabbleGame::drawPiece(%this) {
 
 	return %piece;
 }
+
+function GameConnection::addPiece(%this, %letter) {
+	if(%letter $= "") {
+		return;
+	}
+
+	%this.pieces = trim(%this.pieces SPC %letter);
+
+	return %this.pieces;
+}
+
+function GameConnection::removePiece(%this, %id) {
+	if(%id $= "") {
+		%id = %this.activePiece;
+	}
+
+	for(%i=0;%i<getWordCount(%this.pieces);%i++) {
+		if(%i != %id) {
+			%new = trim(%new SPC getWord(%this.pieces, %i));
+		}
+	}
+
+	%this.pieces = %new;
+
+	if(%this.activePiece >= getWordCount(%this.pieces)) {
+		%this.activePiece = getWordCount(%this.pieces)-1;
+	}
+
+	return %this.pieces;
+}
+
+function GameConnection::drawPiece(%this) {
+	if(!isObject(%this.scrabbleGame)) {
+		return;
+	}
+
+	%game = %this.scrabbleGame;
+
+	if(getWordCount(%game.pieces) <= 0) {
+		return;
+	}
+
+	%this.pieces = trim(%this.pieces SPC %game.drawPiece());
+
+	return %this.pieces;
+}
