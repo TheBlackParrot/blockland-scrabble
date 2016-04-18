@@ -10,13 +10,6 @@
 //   - shiftBrick (1 0 0 = up, -1 0 0 = down, 0 1 0 = left, 0 -1 0 = right)
 //     - left/right will change the selected piece, wrap it around at the ends
 
-// bottomprint example
-function GameConnection::exbp(%this) {
-	%str = "\c6[R1] \c6[T1] \c0[E1] \c6[E1] \c6[S1] \c6[B3] \c6[X8]";
-
-	%this.bottomPrint(%str, 9, 1);
-}
-
 function GameConnection::doBottomPrint(%this) {
 	cancel(%this.bpsched);
 	%this.bpsched = %this.schedule(1000, doBottomPrint);
@@ -76,6 +69,8 @@ package ScrabbleInteractionPackage {
 			%row = %client.selectionSet.getObject(%client.selectionSet.getCount()-1);
 			%client.selectionSet.removeBrick(%row.brick);
 		}
+
+		%client.doBottomPrint();
 	}
 
 	function serverCmdCancelBrick(%client) {
@@ -85,12 +80,16 @@ package ScrabbleInteractionPackage {
 				%client.selectionSet.removeBrick(%row.brick);
 			}
 		}
+
+		%client.doBottomPrint();
 	}
 
 	function serverCmdPlantBrick(%client) {
 		if(%client.selectionSet.getCount() > 0) {
 			%client.selectionSet.plant();
 		}
+
+		%client.doBottomPrint();
 	}
 };
 activatePackage(ScrabbleInteractionPackage);

@@ -143,6 +143,8 @@ package ScrabbleBoardPackage {
 				talk("OLD GHOST");
 				%client.selectionSet.removeBrick(%this.ghostTile);
 			}
+
+			%client.doBottomPrint();
 		}
 
 		if(%this.letterPiece) {
